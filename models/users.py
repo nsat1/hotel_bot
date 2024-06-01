@@ -1,4 +1,3 @@
-# from datetime import datetime, timezone
 from sqlalchemy import Column, BigInteger, String, DateTime, Boolean
 from db.base_class import Base
 

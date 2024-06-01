@@ -18,18 +18,16 @@ async def user_start(message: Message, i18n: TranslatorRunner):
     username = html.quote(message.from_user.full_name)
     user_id = message.from_user.id
 
-    # Проверяем наличие пользователя в базе данных
     existing_user = await users.get(user_id)
 
-    # Если пользователя нет, создаем новую запись
     if not existing_user:
         new_user_data = {
             "id": user_id,
             "fullname": message.from_user.full_name,
             "username": message.from_user.username,
-            "created_at": datetime.now(),  # Добавляем время создания
-            "is_bot": message.from_user.is_bot,  # Добавляем информацию о том, является ли пользователь ботом
-            "language_code": message.from_user.language_code  # Добавляем языковой код пользователя
+            "created_at": datetime.now(),
+            "is_bot": message.from_user.is_bot,
+            "language_code": message.from_user.language_code
         }
         await users.create(**new_user_data)
 

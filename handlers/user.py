@@ -1,6 +1,6 @@
 from datetime import datetime
 from aiogram import Router, html
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 
 from fluentogram import TranslatorRunner
@@ -26,9 +26,14 @@ async def user_start(message: Message, i18n: TranslatorRunner):
             "fullname": message.from_user.full_name,
             "username": message.from_user.username,
             "created_at": datetime.now(),
-            "is_bot": message.from_user.is_bot,
             "language_code": message.from_user.language_code
         }
         await users.create(**new_user_data)
 
     await message.answer(text=i18n.description(username=username))
+
+
+@user_router.message(Command(commands=["help"]))
+async def user_help(message: Message, i18n: TranslatorRunner):
+    help_text = i18n.help()
+    await message.answer(text=help_text)

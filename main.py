@@ -46,7 +46,8 @@ async def main():
 
     await init_db()
 
+    await set_main_menu(bot, translator_hub.get_translator_by_locale('ru'))
+
     await dp.start_polling(bot)
-    await set_main_menu(bot)
 
 asyncio.run(main())

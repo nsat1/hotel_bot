@@ -1,5 +1,4 @@
 from fluent_compiler.bundle import FluentBundle
-
 from fluentogram import FluentTranslator, TranslatorHub
 
 

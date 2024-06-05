@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, String, DateTime, Boolean
+from sqlalchemy import Column, BigInteger, String, DateTime
 from db.base_class import Base
 
 
@@ -9,5 +9,4 @@ class User(Base):
     fullname = Column(String, nullable=True)
     username = Column(String, unique=True, index=True)
     created_at = Column(DateTime)
-    is_bot = Column(Boolean)
     language_code = Column(String)

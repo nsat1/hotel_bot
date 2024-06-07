@@ -13,3 +13,5 @@ custom-command-description = Выбор отеля по пользователь
 high-command-description = Выбор отеля премиум класса
 
 low-command-description = Выбор недорогого отеля
+
+cheap = Введите название города

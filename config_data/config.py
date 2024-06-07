@@ -12,6 +12,10 @@ class Settings(BaseSettings):
 
     BOT_TOKEN: str
 
+    REDIS_HOST: str
+    REDIS_PORT: str
+    REDIS_DB: str
+
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True)

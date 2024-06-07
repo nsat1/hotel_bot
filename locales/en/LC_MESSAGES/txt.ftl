@@ -13,3 +13,5 @@ custom-command-description = Selecting a hotel by user settings
 high-command-description = Choosing a premium hotel
 
 low-command-description = Choosing a cheap hotel
+
+cheap = Введите название города

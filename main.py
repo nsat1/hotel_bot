@@ -32,9 +32,9 @@ async def main():
         token=settings.BOT_TOKEN,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
-    redis = Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
+    r = Redis(host=settings.REDIS_HOST, port=settings.REDIS_PORT, db=settings.REDIS_DB)
 
-    storage = RedisStorage(redis=redis, key_builder=DefaultKeyBuilder(with_destiny=True))
+    storage = RedisStorage(redis=r, key_builder=DefaultKeyBuilder(with_destiny=True))
 
     dp = Dispatcher(storage=storage)
 

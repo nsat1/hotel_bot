@@ -2,7 +2,7 @@
 
 Бот для поиска отелей.
 
-![Пример работы](https://github.com/nsat1/sup/blob/main/hotel_bot.mp4)
+![Пример работы](https://github.com/nsat1/sup/blob/main/video_2024-06-15_20-40-29.gif)
 
 
 В процессе разработки...

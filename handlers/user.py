@@ -13,13 +13,11 @@ from aiogram_dialog.widgets.kbd import Button, Back, Next, Calendar
 from aiogram_dialog.widgets.text import Const, Format, Jinja
 from aiogram_dialog.widgets.input import TextInput
 
+
 from models.users import User
 from db.base_repository import BaseRepository
 from config_data.config import settings
 
-from PIL import Image
-from io import BytesIO
-import requests
 
 users = BaseRepository(User)
 
@@ -41,12 +39,13 @@ async def getter(dialog_manager: DialogManager, **kwargs):
         "city": dialog_manager.find("city").get_value(),
         "date_in": context.dialog_data.get("date_in"),
         "date_out": context.dialog_data.get("date_out"),
-        "search_results": context.dialog_data.get("search_results")
+        "search_results": context.dialog_data.get("search_results"),
+        "photo_list": context.dialog_data.get("photo_list")
     }
 
 
 async def start_clicked(callback: CallbackQuery, button: Button, manager: DialogManager):
-    await callback.answer("Отлично")
+    await callback.answer("Начинаем ... ")
     await manager.next()
 
 
@@ -106,6 +105,8 @@ async def cmd_low(callback: CallbackQuery, widget, manager: DialogManager):
         "geo": item["location"]["geo"]
     } for item in sorted_data]
 
+    manager.dialog_data["result"] = result
+
     photo_hotel_ids = ','.join(str(hotel['hotelId']) for hotel in result)
 
     async with aiohttp.ClientSession() as session:
@@ -115,17 +116,28 @@ async def cmd_low(callback: CallbackQuery, widget, manager: DialogManager):
             photos_data = await response.json()
 
     first_photo_ids = {hotel_id: photos[0] for hotel_id, photos in photos_data.items()}
-    print(f"first_photo_ids ... {first_photo_ids}")
+    photo_list = list(first_photo_ids.values())
+
+    for hotel in result:
+        photo_id = photo_list.pop(0)
+        photo_url = f"https://photo.hotellook.com/image_v2/limit/{photo_id}/800/520.auto"
+        caption = (
+            f"Отель: {hotel['hotelName']}\n"
+            f"Адрес: {hotel['geo']}\n"
+            f"Stars: {hotel['stars']}\n"
+            f"Средняя стоимость: {hotel['priceAvg']} рублей\n"
+        )
+        await callback.message.answer_photo(photo=photo_url, caption=caption)
 
 
 dialog = Dialog(
     Window(
-        Format("\n\nДобрый день\n\n"),
+        Format("Настоящий бот поможет подобрать отель в указанном городе по приемлемой цене."),
         Button(Const("Начнем поиск"), id="start_search", on_click=start_clicked),
         state=DialogSG.start
     ),
     Window(
-        Format("Выберите город"),
+        Format("Напишите в чат название города в котором будет осуществлен поиск."),
         TextInput(
             id="city",
             on_success=Next(),
@@ -163,8 +175,9 @@ dialog = Dialog(
         Button(Const("Подобрать отели премиум класса"), id="high"),
         Button(Const("Подобрать отели по ценовому диапазону"), id="custom"),
         state=DialogSG.user_choice
-    )
+    ),
 )
+
 
 user_router.include_router(dialog)
 

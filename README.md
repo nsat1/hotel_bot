@@ -1,19 +1,20 @@
-## Описание:
+## Description:
 
-Бот для поиска отелей.
-В процессе разработки ...
+Telegram bot for search hotels.
 
-Пример работы бота на данный момент:
+Work in progress ...
 
-![Пример](https://github.com/nsat1/sup/blob/main/hotel_bot.gif)
+Example of how the Telegram bot is currently working:
+
+![example](https://github.com/nsat1/sup/blob/main/hotel_bot.gif)
 
 
 
 TODO list:
-- [x] Добавить обратное геокодирование
-  - [ ] Исправить ошибку вывода адреса
-- [ ] Реализовать команду /history
-- [ ] Рефакторинг handlers/user.py
-- [ ] Добавить интернационализацию
-- [ ] Доработать корректный вывод для другой валюты
-- [ ] Проработать возможные исключения
+- [x] Add reverse geocoding
+  - [ ] Fix address output
+- [ ] Implement /history command
+- [ ] Refactor handlers/user.py
+- [ ] Add internationalization, locales
+- [ ] Improve correct output for other currency
+- [ ] Work out possible exceptions

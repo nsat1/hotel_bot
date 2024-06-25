@@ -1,17 +1,13 @@
-description = Добрый день, { $username }! Я помогу Вам найти подходящий отель за пару кликов!
+description =
 
-help = Я могу помочь Вам найти нужный отель в любом городе.
-       Для этого используйте следующие команды:
-       /low - найдет отели по самой выгодной цене;
-       /high - покажет отели премиум класса;
-       /custom - поможет подобрать отель, отвечающий именно Вашим требованиям.
+help =
 
-help-command-description = Справка по работе бота
+help-command-description =
 
-custom-command-description = Выбор отеля по пользовательским настройкам
+custom-command-description =
 
-high-command-description = Выбор отеля премиум класса
+high-command-description =
 
-low-command-description = Выбор недорогого отеля
+low-command-description =
 
-cheap = Введите название города
+cheap =

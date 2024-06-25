@@ -2,7 +2,7 @@ from datetime import datetime, date
 
 import aiohttp
 from aiogram import Router
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ContentType
 from aiogram.filters import Command
 from aiogram.filters.state import StatesGroup, State, StateFilter
 from aiogram.fsm.state import default_state
@@ -12,11 +12,14 @@ from aiogram_dialog import Window, Dialog, DialogManager, StartMode, setup_dialo
 from aiogram_dialog.widgets.kbd import Button, Back, Next, Calendar
 from aiogram_dialog.widgets.text import Const, Format, Jinja
 from aiogram_dialog.widgets.input import TextInput
+from aiogram_dialog.widgets.media import StaticMedia
 
 
 from models.users import User
 from db.base_repository import BaseRepository
 from config_data.config import settings
+
+from dadata import DadataAsync
 
 
 users = BaseRepository(User)
@@ -88,11 +91,30 @@ async def search(callback: CallbackQuery, button: Button, manager: DialogManager
 
     manager.dialog_data["search_results"] = data
 
+    await geocoder(manager)
+
     await manager.next()
+
+
+async def geocoder(manager: DialogManager):
+    data = manager.dialog_data.get("search_results")
+    geo_results = []
+
+    async with DadataAsync(token=settings.GEO_API, secret=settings.GEO_SECRET) as dadata:
+        for result in data:
+            lat = result['location']['geo']['lat']
+            lon = result['location']['geo']['lon']
+            response = await dadata.geolocate(name="address", lat=lat, lon=lon)
+            geo_result = response[0].get("value")
+            geo_results.append(geo_result)
+
+    manager.dialog_data["geo_results"] = geo_results
 
 
 async def cmd_low(callback: CallbackQuery, widget, manager: DialogManager):
     await callback.answer("Формируем данные")
+
+    geo_results = manager.dialog_data.get("geo_results")
     data = manager.dialog_data.get("search_results")
 
     sorted_data = sorted(data, key=lambda x: x['priceAvg'])[:5]
@@ -102,16 +124,14 @@ async def cmd_low(callback: CallbackQuery, widget, manager: DialogManager):
         "priceAvg": item["priceAvg"],
         "stars": item["stars"],
         "hotelName": item["hotelName"],
-        "geo": item["location"]["geo"]
-    } for item in sorted_data]
-
-    manager.dialog_data["result"] = result
+        "address": geo_results[data.index(item)] if data.index(item) < len(geo_results) else "Адрес не найден"
+} for item in sorted_data]
 
     photo_hotel_ids = ','.join(str(hotel['hotelId']) for hotel in result)
 
     async with aiohttp.ClientSession() as session:
         async with session.get(
-            url=f"https://yasen.hotellook.com/photos/hotel_photos?id={photo_hotel_ids}"
+                url=f"https://yasen.hotellook.com/photos/hotel_photos?id={photo_hotel_ids}"
         ) as response:
             photos_data = await response.json()
 
@@ -121,9 +141,10 @@ async def cmd_low(callback: CallbackQuery, widget, manager: DialogManager):
     for hotel in result:
         photo_id = photo_list.pop(0)
         photo_url = f"https://photo.hotellook.com/image_v2/limit/{photo_id}/800/520.auto"
+
         caption = (
             f"Отель: {hotel['hotelName']}\n"
-            f"Адрес: {hotel['geo']}\n"
+            f"Адрес: {hotel['address']}\n"
             f"Stars: {hotel['stars']}\n"
             f"Средняя стоимость: {hotel['priceAvg']} рублей\n"
         )
@@ -132,12 +153,17 @@ async def cmd_low(callback: CallbackQuery, widget, manager: DialogManager):
 
 dialog = Dialog(
     Window(
-        Format("Настоящий бот поможет подобрать отель в указанном городе по приемлемой цене."),
-        Button(Const("Начнем поиск"), id="start_search", on_click=start_clicked),
+        StaticMedia(
+            url="https://goo.su/8SaHvtx",
+            type=ContentType.PHOTO
+        ),
+        Format("Я помогу тебе найти подходящий отель в любом городе."),
+        Button(Const("Начнем поиск >>"), id="start_search", on_click=start_clicked),
         state=DialogSG.start
     ),
     Window(
         Format("Напишите в чат название города в котором будет осуществлен поиск."),
+        Format("Например: 'Москва'."),
         TextInput(
             id="city",
             on_success=Next(),
@@ -145,13 +171,13 @@ dialog = Dialog(
         state=DialogSG.city_choose
     ),
     Window(
-        Format("Выберите дату заезда"),
+        Format("Выберите дату заезда >>"),
         Calendar(id="date_in", on_click=on_date_selected),
         Back(text=Const("<< Назад")),
         state=DialogSG.date_in
     ),
     Window(
-        Format("Выберите дату выезда"),
+        Format("Выберите дату выезда >>"),
         Calendar(id="date_out", on_click=out_date_selected),
         Back(text=Const("<< Назад")),
         state=DialogSG.date_out
@@ -163,7 +189,7 @@ dialog = Dialog(
             "<b>Дата заезда</b>: {{date_in}}\n"
             "<b>Дата выезда</b>: {{date_out}}\n"
         ),
-        Button(Const("Верно, начинаем поиск"), id="search", on_click=search),
+        Button(Const("Все верно, продолжить >>"), id="search", on_click=search),
         Back(text=Const("<< Назад")),
         state=DialogSG.choice_result,
         getter=getter,
@@ -198,6 +224,7 @@ async def cmd_start(message: Message, dialog_manager: DialogManager):
             "language_code": message.from_user.language_code
             }
         await users.create(**new_user_data)
+
     await dialog_manager.start(DialogSG.start, mode=StartMode.RESET_STACK)
 
 setup_dialogs(user_router)

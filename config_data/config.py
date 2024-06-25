@@ -14,6 +14,9 @@ class Settings(BaseSettings):
 
     HOTEL_API: str
 
+    GEO_API: str
+    GEO_SECRET: str
+
     REDIS_HOST: str
     REDIS_PORT: str
     REDIS_DB: str
